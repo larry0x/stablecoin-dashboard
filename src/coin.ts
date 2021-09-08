@@ -15,11 +15,16 @@ function _formatMoney(amount: number, denom = "", decPlaces = 2) {
   );
 }
 
-function _calculateStdDev(numbers: number[], _mean?: number) {
+function _calculateAvgDev(numbers: number[], _mean?: number) {
   const mean = _mean ? _mean : numbers.reduce((a, b) => a + b, 0) / numbers.length;
   return Math.sqrt(
     numbers.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / numbers.length
   );
+}
+
+function _calculateMaxDev(numbers: number[], _mean?: number) {
+  const mean = _mean ? _mean : numbers.reduce((a, b) => a + b, 0) / numbers.length;
+  return Math.sqrt(Math.max(...numbers.map((x) => Math.pow(x - mean, 2))));
 }
 
 function _generateTag(type: CoinType) {
@@ -31,7 +36,7 @@ function _generateTag(type: CoinType) {
     case CoinType.Mixed:
       return '<span class="tag tag-mixed">mixed</span>';
     case CoinType.Algorithmic:
-      return '<span class="tag tag-algorithmic">algorithimic</span>';
+      return '<span class="tag tag-algorithmic">algorithmic</span>';
     case CoinType.Unknown:
       return '<span class="tag tag-unknown">unknown</span>';
   }
@@ -54,7 +59,9 @@ export class Coin {
   currentPrice: number | undefined = undefined;
   currentMarketCap: number | undefined = undefined;
   historicalPrices: number[] | undefined = undefined;
-  stdDev: number | undefined = undefined;
+  avgDev: number | undefined = undefined;
+  maxDev: number | undefined = undefined;
+  stable: boolean = false;
 
   constructor(name: string, coingeckoId: string, type: CoinType, icon?: string) {
     this.name = name;
@@ -64,7 +71,7 @@ export class Coin {
   }
 
   async fetchData(days: string) {
-    console.log(`Attempting to fetching data for ${this.name}...`);
+    console.log(`Attempting to fetch data for ${this.name}...`);
 
     try {
       const data: {
@@ -95,10 +102,14 @@ export class Coin {
       // this.currentMarketCap = Math.random() * 1000000;
       // this.historicalPrices = [Math.random(), Math.random(), Math.random()];
 
-      this.stdDev = _calculateStdDev(this.historicalPrices, this.targetPrice);
+      this.avgDev = _calculateAvgDev(this.historicalPrices, this.targetPrice);
+      this.maxDev = _calculateMaxDev(this.historicalPrices, this.targetPrice);
+
+      this.stable =
+        this.avgDev < 0.01 * this.targetPrice && this.maxDev < 0.03 * this.targetPrice;
 
       console.log(`Successfully fetched data for ${this.name}!`);
-      console.log(`Historical prices of ${this.name}`, this.historicalPrices);
+      // console.log(`Historical prices of ${this.name}`, this.historicalPrices);
     } catch (e) {
       console.log(`Failed to fetch data for ${this.name}! Error message: ${e}`);
     }
@@ -124,7 +135,13 @@ export class Coin {
         this.currentMarketCap ? _formatMoney(this.currentMarketCap, "", 0) : "?"
       }</td>` +
       `<td>${this.currentPrice ? this.currentPrice.toPrecision(3) : "?"}</td>` +
-      `<td>${this.stdDev ? this.stdDev.toPrecision(3) : "?"}</td>` +
+      `<td class="${
+        this.avgDev && this.avgDev < 0.01 * this.targetPrice ? "text-success" : ""
+      }">${this.avgDev ? this.avgDev.toPrecision(3) : "?"}</td>` +
+      `<td class="${
+        this.maxDev && this.maxDev < 0.03 * this.targetPrice ? "text-success" : ""
+      }">${this.maxDev ? this.maxDev.toPrecision(3) : "?"}</td>` +
+      `<td>${this.stable ? "✅" : ""}</td>` +
       "</tr>"
     );
   }

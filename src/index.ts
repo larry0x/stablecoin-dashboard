@@ -21,7 +21,7 @@ const COINS = [
   new Coin("VAI", "vai", CoinType.Mixed, "images/vai.png"),
   new Coin("USDX", "usdx", CoinType.Mixed, "images/usdx.png"),
   new Coin("USDP", "usdp", CoinType.Mixed, "images/usdp.png"),
-  new Coin("CUSD", "celo-dollar", CoinType.Centralized, "images/cusd.png"),
+  new Coin("CUSD", "celo-dollar", CoinType.Algorithmic, "images/cusd.png"),
   new Coin("mUSD", "musd", CoinType.Mixed, "images/musd.png"),
 ];
 
@@ -37,20 +37,43 @@ const selectors: { [key: string]: HTMLElement } = {
 
 const sortByMarketCap = document.getElementById("sortByMarketCap") as HTMLElement;
 const sortByCurrentPrice = document.getElementById("sortByCurrentPrice") as HTMLElement;
-const sortByStdDev = document.getElementById("sortByStdDev") as HTMLElement;
+const sortByAvgDev = document.getElementById("sortByAvgDev") as HTMLElement;
+const sortByMaxDev = document.getElementById("sortByMaxDev") as HTMLElement;
+const sortByStable = document.getElementById("sortByStable") as HTMLElement;
 
+const overlayContainer = document.getElementById("overlayContainer") as HTMLElement;
+const progressBar = document.getElementById("progressBar") as HTMLElement;
 const tbody = document.getElementById("tbody") as HTMLElement;
+
+async function showProgressBar() {
+  progressBar.style.width = "0%";
+  progressBar.innerHTML = "";
+  overlayContainer.style.display = "block";
+  overlayContainer.style.opacity = "1";
+}
+
+async function hideProgressBar() {
+  overlayContainer.style.opacity = "0";
+  await new Promise((r) => setTimeout(r, 250));
+  overlayContainer.style.display = "none";
+}
 
 async function run(days: string) {
   console.log(`Fetching data for the last ${days} days...`);
 
   tbody.innerHTML = "";
+  let count = 0;
 
-  COINS.map((coin) => {
-    coin.fetchData(days).then(() => {
-      tbody.innerHTML += coin.generateRow();
-    });
-  });
+  for (const coin of COINS) {
+    await coin.fetchData(days);
+
+    count += 1;
+    const percentage = ((100 * count) / COINS.length).toFixed(0) + "%";
+    progressBar.style.width = percentage;
+    progressBar.innerHTML = percentage;
+
+    tbody.innerHTML += coin.generateRow();
+  }
 }
 
 for (let key in selectors) {
@@ -59,7 +82,13 @@ for (let key in selectors) {
       selector.classList.remove("active");
     });
     selectors[key].classList.add("active");
-    run(key);
+
+    showProgressBar();
+
+    run(key).then(() => {
+      sortByMarketCap.dispatchEvent(new Event("click"));
+      hideProgressBar();
+    });
   });
 }
 
@@ -97,16 +126,49 @@ sortByCurrentPrice.addEventListener("click", function () {
   });
 });
 
-sortByStdDev.addEventListener("click", function () {
-  console.log("Sorting by stddev...");
+sortByAvgDev.addEventListener("click", function () {
+  console.log("Sorting by avg dev...");
 
   tbody.innerHTML = "";
 
   COINS.sort((a, b) => {
-    if (!a.stdDev) return -1;
-    if (!b.stdDev) return 1;
-    if (a.stdDev > b.stdDev) return 1;
+    if (!a.avgDev) return -1;
+    if (!b.avgDev) return 1;
+    if (a.avgDev > b.avgDev) return 1;
     else return -1;
+  });
+
+  COINS.forEach((coin) => {
+    tbody.innerHTML += coin.generateRow();
+  });
+});
+
+sortByMaxDev.addEventListener("click", function () {
+  console.log("Sorting by max dev...");
+
+  tbody.innerHTML = "";
+
+  COINS.sort((a, b) => {
+    if (!a.maxDev) return -1;
+    if (!b.maxDev) return 1;
+    if (a.maxDev > b.maxDev) return 1;
+    else return -1;
+  });
+
+  COINS.forEach((coin) => {
+    tbody.innerHTML += coin.generateRow();
+  });
+});
+
+sortByStable.addEventListener("click", function () {
+  console.log("Sorting by stable...");
+
+  tbody.innerHTML = "";
+
+  COINS.sort((a, b) => {
+    if (a.stable) return -1;
+    else if (b.stable) return 1;
+    else return 0;
   });
 
   COINS.forEach((coin) => {

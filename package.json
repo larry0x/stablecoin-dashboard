@@ -1,0 +1,30 @@
+{
+  "name": "stablecoin-dashboard",
+  "version": "1.0.0",
+  "author": "larry_0x <larry_0x@protonmail.com>",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "parcel ./src/index.html",
+    "build": "parce build ./src/index.html --public-url ./ --out-dir dist --experimental-scope-hoisting"
+  },
+  "dependencies": {
+    "axios": "^0.21.4",
+    "bootstrap": "^5.1.1"
+  },
+  "devDependencies": {
+    "@parcel/transformer-image": "^2.0.0-rc.0",
+    "@parcel/transformer-sass": "^2.0.0-rc.0",
+    "@types/bootstrap": "^5.1.4",
+    "parcel": "^2.0.0-rc.0",
+    "prettier": "^2.3.2",
+    "typescript": "^4.4.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/larry0x/stablecoin-dashboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/larry0x/stablecoin-dashboard/issues"
+  },
+  "homepage": "https://github.com/larry0x/stablecoin-dashboard#readme"
+}

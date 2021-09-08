@@ -98,6 +98,7 @@ export class Coin {
       this.stdDev = _calculateStdDev(this.historicalPrices, this.targetPrice);
 
       console.log(`Successfully fetched data for ${this.name}!`);
+      console.log(`Historical prices of ${this.name}`, this.historicalPrices);
     } catch (e) {
       console.log(`Failed to fetch data for ${this.name}! Error message: ${e}`);
     }

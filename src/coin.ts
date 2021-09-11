@@ -106,7 +106,8 @@ export class Coin {
       this.maxDev = _calculateMaxDev(this.historicalPrices, this.targetPrice);
 
       this.stable =
-        this.avgDev < 0.01 * this.targetPrice && this.maxDev < 0.03 * this.targetPrice;
+        this.avgDev <= 0.005 * this.targetPrice &&
+        this.maxDev <= 0.015 * this.targetPrice;
 
       console.log(`Successfully fetched data for ${this.name}!`);
       // console.log(`Historical prices of ${this.name}`, this.historicalPrices);
@@ -136,10 +137,10 @@ export class Coin {
       }</td>` +
       `<td>${this.currentPrice ? this.currentPrice.toPrecision(3) : "?"}</td>` +
       `<td class="${
-        this.avgDev && this.avgDev < 0.01 * this.targetPrice ? "text-success" : ""
+        this.avgDev && this.avgDev <= 0.005 * this.targetPrice ? "text-success" : ""
       }">${this.avgDev ? this.avgDev.toPrecision(3) : "?"}</td>` +
       `<td class="${
-        this.maxDev && this.maxDev < 0.03 * this.targetPrice ? "text-success" : ""
+        this.maxDev && this.maxDev < 0.015 * this.targetPrice ? "text-success" : ""
       }">${this.maxDev ? this.maxDev.toPrecision(3) : "?"}</td>` +
       `<td>${this.stable ? "✅" : ""}</td>` +
       "</tr>"
